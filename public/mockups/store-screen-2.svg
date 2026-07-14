@@ -1,0 +1,10 @@
+<svg width="320" height="640" viewBox="0 0 320 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="640" rx="28" fill="#F8FAFC"/>
+  <rect x="18" y="18" width="284" height="240" rx="20" fill="#1F2937"/>
+  <circle cx="60" cy="294" r="18" fill="#10B981"/>
+  <text x="90" y="302" fill="#18181B" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Live ETA</text>
+  <circle cx="60" cy="344" r="18" fill="#FF6B35"/>
+  <text x="90" y="352" fill="#18181B" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Verified drivers</text>
+  <rect x="36" y="382" width="248" height="44" rx="12" fill="#111827"/>
+  <text x="56" y="411" fill="white" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700">PLACEHOLDER SCREEN 2</text>
+</svg>

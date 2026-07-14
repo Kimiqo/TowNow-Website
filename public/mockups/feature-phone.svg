@@ -1,0 +1,16 @@
+<svg width="460" height="900" viewBox="0 0 460 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="10" y="10" width="440" height="880" rx="52" fill="#111827"/>
+  <rect x="28" y="46" width="404" height="808" rx="42" fill="url(#g)"/>
+  <rect x="58" y="96" width="344" height="120" rx="24" fill="white" fill-opacity="0.95"/>
+  <rect x="58" y="248" width="344" height="120" rx="24" fill="white" fill-opacity="0.95"/>
+  <rect x="58" y="400" width="344" height="120" rx="24" fill="white" fill-opacity="0.95"/>
+  <text x="80" y="166" fill="#18181B" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="700">Real-time tracking</text>
+  <text x="80" y="318" fill="#18181B" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="700">Transparent pricing</text>
+  <text x="80" y="470" fill="#18181B" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="700">Verified drivers</text>
+  <defs>
+    <linearGradient id="g" x1="230" y1="46" x2="230" y2="854" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1F2937"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+  </defs>
+</svg>
