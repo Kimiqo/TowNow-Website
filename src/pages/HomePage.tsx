@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform, useInView, animate, useSpring } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useRef, useState, useEffect } from 'react'
 import Typewriter from 'typewriter-effect'
@@ -318,7 +318,7 @@ export default function HomePage() {
 
   const lineUp = {
     hidden: { opacity: 0, y: 40 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" as const } }
   }
 
   const pageScale = useTransform(pageScroll, [0, 0.15], [1, 0.96])
@@ -649,7 +649,7 @@ export default function HomePage() {
               transition={{ duration: 0.6 }}
             >
               <h3 className="font-serif text-6xl font-bold sm:text-7xl md:text-8xl text-white">
-                <NumberCounter to={5000} duration={2.5} />
+                <NumberCounter to={5000} />
               </h3>
               <p className="mt-4 text-sm font-medium uppercase tracking-widest text-tow-muted">Active Users</p>
             </motion.div>
@@ -660,7 +660,7 @@ export default function HomePage() {
               transition={{ delay: 0.2, duration: 0.6 }}
             >
               <h3 className="font-serif text-6xl font-bold sm:text-7xl md:text-8xl text-[#FF6B35]">
-                <NumberCounter to={12000} duration={3} />
+                <NumberCounter to={12000} />
               </h3>
               <p className="mt-4 text-sm font-medium uppercase tracking-widest text-tow-muted">Successful Tows</p>
             </motion.div>
