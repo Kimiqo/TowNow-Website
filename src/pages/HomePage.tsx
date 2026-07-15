@@ -1,7 +1,8 @@
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform, useInView, animate, useSpring } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import Typewriter from 'typewriter-effect'
+import MagneticButton from '../components/MagneticButton'
 import {
   features,
   homeFeatureImages,
@@ -48,8 +49,9 @@ function ScrollRevealParagraph({ text, className = '' }: { text: string; classNa
   const containerRef = useRef<HTMLParagraphElement>(null)
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ['start 0.95', 'start 0.25'],
+    offset: ['start 0.9', 'start 0.25'],
   })
+  const smoothScroll = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 })
 
   const words = text.split(' ')
 
@@ -60,13 +62,205 @@ function ScrollRevealParagraph({ text, className = '' }: { text: string; classNa
         const end = start + 1 / words.length
         return (
           <span key={`${word}-${i}`} className="mr-[0.3em] last:mr-0">
-            <ScrollWord progress={scrollYProgress} range={[start, end]}>
+            <ScrollWord progress={smoothScroll} range={[start, end]}>
               {word}
             </ScrollWord>
           </span>
         )
       })}
     </p>
+  )
+}
+
+/* ────────────────────────────────────────────────── */
+/*  Number Counter Component                          */
+/* ────────────────────────────────────────────────── */
+function NumberCounter({ to }: { to: number }) {
+  const nodeRef = useRef<HTMLSpanElement>(null)
+
+  const { scrollYProgress } = useScroll({
+    target: nodeRef,
+    offset: ['start 0.9', 'start 0.4'],
+  })
+
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 })
+  const numberValue = useTransform(smoothProgress, [0, 1], [0, to])
+
+  useEffect(() => {
+    return numberValue.on('change', (latest) => {
+      if (nodeRef.current) {
+        nodeRef.current.textContent = Math.round(latest).toLocaleString() + '+'
+      }
+    })
+  }, [numberValue])
+
+  return <span ref={nodeRef}>0+</span>
+}
+
+/* ────────────────────────────────────────────────── */
+/*  Horizontal Video Scroll Component                 */
+/* ────────────────────────────────────────────────── */
+function HorizontalScrollVideos() {
+  const targetRef = useRef<HTMLElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: targetRef,
+  })
+  const smoothScroll = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 })
+
+  // 3 items -> to scroll to the last item, we shift left by 200vw or ~66.66% of the track.
+  const x = useTransform(smoothScroll, [0, 1], ['0%', '-66.666%'])
+  
+  // Use smoothScroll to determine active video for opacity dimming
+  const opacity1 = useTransform(smoothScroll, [0, 0.25], [1, 0.4])
+  const opacity2 = useTransform(smoothScroll, [0.15, 0.5, 0.85], [0.4, 1, 0.4])
+  const opacity3 = useTransform(smoothScroll, [0.75, 1], [0.4, 1])
+
+  const videos = [
+    { text: 'Breakdowns happen. Anywhere. Anytime.', opacity: opacity1 },
+    { text: 'TowNow connects you instantly to nearby help.', opacity: opacity2 },
+    { text: 'Track your tow truck in real-time.', opacity: opacity3 },
+  ]
+
+  return (
+    <section ref={targetRef} className="relative h-[300vh] bg-black">
+      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
+        <motion.div 
+          style={{ x, willChange: 'transform', transform: 'translateZ(0)' }} 
+          className="flex w-[300vw] items-center px-[5vw] sm:px-[10vw]"
+        >
+          {videos.map((vid, idx) => (
+            <motion.div 
+              key={idx} 
+              className="relative flex h-[60vh] w-[80vw] sm:w-[60vw] mx-auto shrink-0 flex-col justify-center rounded-3xl bg-zinc-900 border border-white/10 overflow-hidden shadow-2xl mr-[10vw]"
+              style={{ opacity: vid.opacity, willChange: 'opacity' }}
+            >
+              {/* Placeholder for actual video */}
+              <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 flex items-center justify-center">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-700">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              </div>
+              
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="relative z-10 mt-auto p-8 sm:p-12">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF6B35] mb-3">0{idx + 1} / SEE IT WORK</p>
+                <h3 className="font-serif text-3xl font-bold text-white sm:text-4xl md:text-5xl">{vid.text}</h3>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+/* ────────────────────────────────────────────────── */
+/*  Bento Box Integrations Component                  */
+/* ────────────────────────────────────────────────── */
+function BentoBoxIntegrations() {
+  return (
+    <section className="relative px-6 py-28 sm:py-36 bg-zinc-950 border-t border-white/5">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-16 text-center">
+          <motion.p
+            className="mb-4 text-xs font-medium uppercase tracking-[0.25em] text-zinc-500"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+          >
+            MOOLRE INTEGRATION
+          </motion.p>
+          <motion.h2
+            className="font-serif text-4xl font-bold text-white sm:text-5xl md:text-6xl"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            Every leg of the ride...
+          </motion.h2>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {/* SMS Card */}
+          <motion.div 
+            className="group relative overflow-hidden rounded-[2rem] bg-zinc-900 border border-white/5 p-8 sm:col-span-2 lg:col-span-1 h-[320px] transition-colors hover:bg-zinc-800/80 hover:border-white/10"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+          >
+            <div className="relative z-10 flex flex-col h-full">
+              <h3 className="text-2xl font-bold text-white mb-2">SMS Notifications</h3>
+              <p className="text-sm text-zinc-400">Keep drivers and riders in the loop with instant updates.</p>
+              
+              <div className="mt-auto self-center bg-black border border-white/10 rounded-2xl py-4 px-8 shadow-inner">
+                <span className="text-zinc-600 font-mono text-sm mr-3">OTP:</span>
+                <span className="font-mono font-bold text-[#FF6B35] tracking-[0.25em] relative text-lg">
+                  <span className="opacity-0 transition-opacity duration-700 group-hover:opacity-100">482914</span>
+                  <span className="absolute inset-0 bg-[#FF6B35]/20 animate-pulse transition-opacity duration-300 group-hover:opacity-0 rounded" />
+                </span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* USSD Card */}
+          <motion.div 
+            className="group relative overflow-hidden rounded-[2rem] bg-zinc-900 border border-white/5 p-8 sm:col-span-1 lg:col-span-1 h-[320px] transition-colors hover:bg-zinc-800/80 hover:border-white/10"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="relative z-10 flex flex-col h-full">
+              <h3 className="text-2xl font-bold text-white mb-2">USSD Access</h3>
+              <p className="text-sm text-zinc-400">Request a tow without internet. Fast and reliable.</p>
+              
+              <div className="mt-auto self-center relative">
+                <div className="bg-[#FF6B35]/10 border border-[#FF6B35]/30 text-[#FF9F73] font-mono text-2xl font-bold rounded-2xl py-4 px-8 cursor-pointer transition-transform group-hover:scale-105">
+                  *919*4007#
+                </div>
+                <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-white text-black text-xs font-bold py-1.5 px-4 rounded-lg opacity-0 transform translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 shadow-xl">
+                  Copy
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-white" />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Payments Card */}
+          <motion.div 
+            className="group relative overflow-hidden rounded-[2rem] bg-zinc-900 border border-white/5 p-8 sm:col-span-1 lg:col-span-1 h-[320px] transition-colors hover:bg-zinc-800/80 hover:border-white/10"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="relative z-10 flex flex-col h-full">
+              <h3 className="text-2xl font-bold text-white mb-2">Automated Payouts</h3>
+              <p className="text-sm text-zinc-400">Instant disbursements to drivers upon completion.</p>
+              
+              <div className="mt-auto relative h-20 flex items-center justify-center bg-black/40 rounded-2xl border border-white/5">
+                <div className="flex items-center gap-6 text-[#FF6B35]">
+                  {/* User Icon */}
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-500"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  
+                  {/* Flowing dots */}
+                  <div className="relative w-20 h-[2px] bg-white/5 overflow-hidden rounded-full">
+                    <motion.div 
+                      className="absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-transparent via-[#FF6B35] to-transparent opacity-0 group-hover:opacity-100 transition-opacity"
+                      animate={{ x: ['-100%', '300%'] }}
+                      transition={{ repeat: Infinity, duration: 1.2, ease: "linear" }}
+                    />
+                  </div>
+
+                  {/* Truck/Driver Icon */}
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-[#FF6B35]"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -78,7 +272,8 @@ export default function HomePage() {
   const reduceMotion = useReducedMotion()
 
   /* ── Global scroll progress for background transitions ── */
-  const { scrollYProgress: pageScroll } = useScroll()
+  const { scrollYProgress: rawPageScroll } = useScroll()
+  const pageScroll = useSpring(rawPageScroll, { stiffness: 100, damping: 30, restDelta: 0.001 })
 
   const pageBackground = useTransform(
     pageScroll,
@@ -110,173 +305,219 @@ export default function HomePage() {
     ['rgba(255,255,255,0.7)', 'rgba(255,255,255,0.7)', 'rgba(255,255,255,0.05)', 'rgba(255,255,255,0.05)', 'rgba(255,255,255,0.7)', 'rgba(255,255,255,0.7)']
   )
 
+  const heroY = useTransform(pageScroll, [0, 0.15], [0, -150])
+  const heroOpacity = useTransform(pageScroll, [0, 0.15], [1, 0])
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.2, delayChildren: 0.1 }
+    }
+  }
+
+  const lineUp = {
+    hidden: { opacity: 0, y: 40 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+  }
+
+  const pageScale = useTransform(pageScroll, [0, 0.15], [1, 0.96])
+  const pageBorderRadius = useTransform(pageScroll, [0, 0.15], [0, 32])
+
   return (
     <>
-      {/* Fixed background layer for the surreal static-color-shift effect */}
+      {/* Absolute background layer for the surreal static-color-shift effect */}
       <motion.div
-        className="fixed inset-0 -z-10"
+        className="absolute inset-0 -z-10"
         style={{ backgroundColor: pageBackground }}
       />
       
-      {/* Scrollable content layer */}
+      {/* Scrollable content layer (No transforms here to preserve sticky positioning below) */}
       <motion.div
-        className="relative transition-opacity duration-700"
+        className="relative transition-opacity duration-700 text-tow-ink"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.7 }}
         style={{ color: sectionTextColor }}
       >
-      {/* ═══════════════════════════════════════════════════ */}
-      {/*  SECTION 1 — HERO: Minimal, centered, storytelling */}
-      {/* ═══════════════════════════════════════════════════ */}
-      <section
-        id="homepage-hero"
-        className="relative flex min-h-screen flex-col items-center justify-center px-6 text-center"
-      >
-        {/* Subtle gradient orb — orange */}
-        <div
-          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full opacity-40 blur-[120px]"
-          style={{ background: 'radial-gradient(circle, rgba(255,107,53,0.25) 0%, transparent 70%)' }}
-          aria-hidden
-        />
-
-        <motion.div
-          initial={reduceMotion ? {} : { opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: 'easeOut' }}
-          className="relative z-10"
+        
+        {/* We wrap the first sections in the scale effect so it zooms out, but leave the sticky sections outside! */}
+        <motion.div 
+          className="bg-tow-bg origin-top shadow-2xl relative z-20"
+          style={{ scale: pageScale, borderRadius: pageBorderRadius }}
         >
-          <p className="mb-6 text-xs font-medium uppercase tracking-[0.25em] text-tow-muted sm:text-sm">
-            TOWNOW / ROADSIDE ASSISTANCE
-          </p>
-          <h1 className="font-serif text-5xl font-bold leading-[1.1] sm:text-6xl md:text-7xl lg:text-8xl min-h-[140px] sm:min-h-[160px] md:min-h-[180px]">
-            Tow trucks.
-            <br />
-            <span className="text-[#FF6B35]">
-              <Typewriter
-                options={{
-                  strings: ['On demand.', 'Right now.', 'Anywhere.'],
-                  autoStart: true,
-                  loop: true,
-                  delay: 60,
-                  deleteSpeed: 40,
-                }}
-              />
-            </span>
-          </h1>
-          <p className="mx-auto mt-8 max-w-md text-base text-tow-muted sm:text-lg md:text-xl">
-            <span className="font-semibold" style={{ color: '#E85D31' }}>Flat pricing</span> — no haggling, no surprises.
-            <br />
-            Available 24/7 across Ghana.
-          </p>
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <a
-              href="#the-product"
-              className="inline-flex items-center gap-2 rounded-full bg-[#FF6B35] px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[#E85D31] hover:shadow-xl sm:text-base"
-            >
-              See how it works
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </a>
-          </div>
-        </motion.div>
-
-        {/* Scroll cue */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 1 }}
-        >
-          <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-tow-muted">Scroll</span>
-          <motion.svg
-            width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-tow-muted"
-            animate={{ y: [0, 6, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          {/* ═══════════════════════════════════════════════════ */}
+          {/*  SECTION 1 — HERO: Minimal, centered, storytelling */}
+          {/* ═══════════════════════════════════════════════════ */}
+          <section
+            id="homepage-hero"
+            className="relative flex min-h-screen flex-col items-center justify-center px-6 text-center"
           >
-            <path d="M12 5v14M19 12l-7 7-7-7" />
-          </motion.svg>
-        </motion.div>
-      </section>
+            {/* Subtle gradient orb — optimized to remove blur filter */}
+            <div
+              className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[800px] w-[800px] rounded-full opacity-40"
+              style={{ background: 'radial-gradient(circle, rgba(255,107,53,0.15) 0%, rgba(255,107,53,0.05) 40%, transparent 70%)' }}
+              aria-hidden
+            />
 
-      {/* ═══════════════════════════════════════════════════ */}
-      {/*  SECTION 2 — THE PROBLEM: Word-by-word scroll reveal */}
-      {/* ═══════════════════════════════════════════════════ */}
-      <section className="relative px-6 py-28 sm:py-36 md:py-44">
-        <div className="mx-auto max-w-4xl text-center">
-          <motion.p
-            className="mb-8 text-xs font-medium uppercase tracking-[0.25em]"
-            style={{ color: mutedColor }}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            THE PROBLEM
-          </motion.p>
-
-          <ScrollRevealParagraph
-            text="Your car breaks down on the Accra motorway. It's 11 PM. And that's when the real nightmare begins."
-            className="font-serif text-4xl font-bold leading-[1.25] sm:text-5xl md:text-6xl"
-          />
-        </div>
-
-        {/* Pain-point cards */}
-        <div className="mx-auto mt-16 grid max-w-5xl gap-5 sm:grid-cols-3 sm:mt-20">
-          {painPoints.map((point, i) => (
             <motion.div
-              key={point.stat}
-              className="rounded-3xl p-7 sm:p-8 backdrop-blur-sm"
-              style={{ backgroundColor: cardBg, borderColor, borderWidth: 1, borderStyle: 'solid' }}
-              initial={reduceMotion ? {} : { opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ delay: 0.15 * i, duration: 0.55, ease: 'easeOut' }}
+              style={{ y: heroY, opacity: heroOpacity }}
+              className="relative z-10"
             >
-              <p className="font-serif text-4xl font-bold italic sm:text-5xl" style={{ color: '#FF6B35' }}>
-                {point.stat}
-              </p>
-              <motion.p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: mutedColor }}>
-                {point.label}
-              </motion.p>
-              <motion.p className="mt-4 text-sm leading-relaxed" style={{ color: mutedColor }}>
-                {point.desc}
-              </motion.p>
+              <motion.div
+                variants={staggerContainer}
+                initial="hidden"
+                animate="visible"
+              >
+                <div className="overflow-hidden mb-6">
+                  <motion.p variants={lineUp} className="text-xs font-medium uppercase tracking-[0.25em] text-tow-muted sm:text-sm">
+                    TOWNOW / ROADSIDE ASSISTANCE
+                  </motion.p>
+                </div>
+                
+                <div className="overflow-hidden">
+                  <motion.h1 variants={lineUp} className="font-serif text-5xl font-bold leading-[1.1] sm:text-6xl md:text-7xl lg:text-8xl min-h-[140px] sm:min-h-[160px] md:min-h-[180px]">
+                    Tow trucks.
+                    <br />
+                    <span className="text-[#FF6B35]">
+                      <Typewriter
+                        options={{
+                          strings: ['On demand.', 'Right now.', 'Anywhere.'],
+                          autoStart: true,
+                          loop: true,
+                          delay: 60,
+                          deleteSpeed: 40,
+                        }}
+                      />
+                    </span>
+                  </motion.h1>
+                </div>
+
+                <div className="overflow-hidden mt-8">
+                  <motion.p variants={lineUp} className="mx-auto max-w-md text-base text-tow-muted sm:text-lg md:text-xl">
+                    <span className="font-semibold" style={{ color: '#E85D31' }}>Flat pricing</span> — no haggling, no surprises.
+                    <br />
+                    Available 24/7 across Ghana.
+                  </motion.p>
+                </div>
+
+                <motion.div variants={lineUp} className="mt-10 flex flex-wrap justify-center gap-4">
+                  <MagneticButton
+                    href="#the-product"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#FF6B35] px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[#E85D31] sm:text-base cursor-none"
+                  >
+                    See how it works
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  </MagneticButton>
+                </motion.div>
+              </motion.div>
             </motion.div>
-          ))}
-        </div>
-      </section>
 
-      {/* ═══════════════════════════════════════════════════ */}
-      {/*  SECTION 3 — THE ANSWER: Word-by-word scroll reveal */}
-      {/* ═══════════════════════════════════════════════════ */}
-      <section className="relative px-6 py-28 sm:py-36 md:py-44">
-        <div className="mx-auto max-w-4xl text-center">
-          <motion.p
-            className="mb-8 text-xs font-medium uppercase tracking-[0.25em]"
-            style={{ color: mutedColor }}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            THE ANSWER
-          </motion.p>
+            {/* Scroll cue */}
+            <motion.div
+              className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.5, duration: 1 }}
+            >
+              <span className="text-[10px] font-medium uppercase tracking-[0.3em] text-tow-muted">Scroll</span>
+              <motion.svg
+                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-tow-muted"
+                animate={{ y: [0, 6, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <path d="M12 5v14M19 12l-7 7-7-7" />
+              </motion.svg>
+            </motion.div>
+          </section>
 
-          <ScrollRevealParagraph
-            text="One tap. A tow truck is on its way. Flat fare. Always."
-            className="font-serif text-4xl font-bold leading-[1.25] sm:text-5xl md:text-6xl"
-          />
+          {/* ═══════════════════════════════════════════════════ */}
+          {/*  SECTION 2 — THE PROBLEM: Word-by-word scroll reveal */}
+          {/* ═══════════════════════════════════════════════════ */}
+          <section className="relative px-6 py-28 sm:py-36 md:py-44">
+            <div className="mx-auto max-w-4xl text-center">
+              <motion.p
+                className="mb-8 text-xs font-medium uppercase tracking-[0.25em]"
+                style={{ color: mutedColor }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+              >
+                THE PROBLEM
+              </motion.p>
 
-          <motion.p
-            className="mx-auto mt-10 max-w-lg text-lg sm:text-xl"
-            style={{ color: mutedColor }}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-          >
-            TowNow connects you to verified tow truck drivers instantly. No calls, no haggling, no uncertainty.
-          </motion.p>
-        </div>
-      </section>
+              <ScrollRevealParagraph
+                text="Your car breaks down on the Accra motorway. It's 11 PM. And that's when the real nightmare begins."
+                className="font-serif text-4xl font-bold leading-[1.25] sm:text-5xl md:text-6xl"
+              />
+            </div>
+
+            {/* Pain-point cards */}
+            <div className="mx-auto mt-16 grid max-w-5xl gap-5 sm:grid-cols-3 sm:mt-20">
+              {painPoints.map((point, i) => (
+                <motion.div
+                  key={point.stat}
+                  className="rounded-3xl p-7 sm:p-8 backdrop-blur-sm"
+                  style={{ backgroundColor: cardBg, borderColor, borderWidth: 1, borderStyle: 'solid' }}
+                  initial={reduceMotion ? {} : { opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ delay: 0.15 * i, duration: 0.55, ease: 'easeOut' }}
+                  whileHover={{ 
+                    y: -6, 
+                    borderColor: 'rgba(255, 107, 53, 0.5)',
+                    boxShadow: '0 20px 40px -10px rgba(255, 107, 53, 0.15)'
+                  }}
+                >
+                  <p className="font-serif text-4xl font-bold italic sm:text-5xl" style={{ color: '#FF6B35' }}>
+                    {point.stat}
+                  </p>
+                  <motion.p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: mutedColor }}>
+                    {point.label}
+                  </motion.p>
+                  <motion.p className="mt-4 text-sm leading-relaxed" style={{ color: mutedColor }}>
+                    {point.desc}
+                  </motion.p>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
+          {/* ═══════════════════════════════════════════════════ */}
+          {/*  SECTION 3 — THE ANSWER: Word-by-word scroll reveal */}
+          {/* ═══════════════════════════════════════════════════ */}
+          <section className="relative px-6 py-28 sm:py-36 md:py-44">
+            <div className="mx-auto max-w-4xl text-center">
+              <motion.p
+                className="mb-8 text-xs font-medium uppercase tracking-[0.25em]"
+                style={{ color: mutedColor }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+              >
+                THE ANSWER
+              </motion.p>
+
+              <ScrollRevealParagraph
+                text="One tap. A tow truck is on its way. Flat fare. Always."
+                className="font-serif text-4xl font-bold leading-[1.25] sm:text-5xl md:text-6xl"
+              />
+
+              <motion.p
+                className="mx-auto mt-10 max-w-lg text-lg sm:text-xl"
+                style={{ color: mutedColor }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                TowNow connects you to verified tow truck drivers instantly. No calls, no haggling, no uncertainty.
+              </motion.p>
+            </div>
+          </section>
+        </motion.div>
+
+        {/* The rest of the page remains unscaled to prevent sticky positioning glitches */}
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  SECTION 4 — THE PRODUCT: Sticky phone + features  */}
@@ -379,42 +620,63 @@ export default function HomePage() {
         </div>
       </section>
 
+
       {/* ═══════════════════════════════════════════════════ */}
-      {/*  SECTION 5 — VISUAL STORIES: Full-bleed immersive  */}
+      {/*  SECTION 4.5 — STATS: Number counter             */}
       {/* ═══════════════════════════════════════════════════ */}
-      <section className="space-y-0">
-        {[
-          { text: 'Breakdowns happen. Anywhere. Anytime.', image: imageAssets.storyOne },
-          { text: 'TowNow connects you instantly to nearby help.', image: imageAssets.storyTwo },
-          { text: 'Track your tow truck in real-time.', image: imageAssets.storyThree },
-        ].map((story) => (
-          <div
-            key={story.text}
-            className="relative flex min-h-[55vh] items-center justify-center overflow-hidden sm:min-h-[65vh] md:min-h-[80vh]"
+      <section className="relative px-6 py-28 sm:py-36 md:py-44 overflow-hidden">
+        {/* Subtle glowing radial background - optimized */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="h-[800px] w-[800px] rounded-full opacity-30" style={{ background: 'radial-gradient(circle, rgba(255,107,53,0.15) 0%, rgba(255,107,53,0.05) 40%, transparent 70%)' }} />
+        </div>
+
+        <div className="relative mx-auto max-w-4xl text-center">
+          <motion.p
+            className="mb-12 text-xs font-medium uppercase tracking-[0.25em]"
+            style={{ color: mutedColor }}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
           >
-            <motion.img
-              src={story.image}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-              initial={reduceMotion ? {} : { scale: 1.1 }}
-              whileInView={{ scale: 1 }}
-              viewport={{ once: false, amount: 0.25 }}
-              transition={{ duration: 1.2, ease: 'easeOut' }}
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/50 to-black/30" />
-            <motion.h3
-              className="relative max-w-4xl px-6 text-center font-serif text-3xl font-bold text-white sm:text-4xl md:text-5xl lg:text-6xl"
-              initial={reduceMotion ? {} : { opacity: 0, y: 30 }}
+            REAL DEMAND, DAY ONE
+          </motion.p>
+
+          <div className="grid gap-12 sm:grid-cols-2">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false, amount: 0.5 }}
-              transition={{ duration: 0.7, ease: 'easeOut' }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
             >
-              {story.text}
-            </motion.h3>
+              <h3 className="font-serif text-6xl font-bold sm:text-7xl md:text-8xl text-white">
+                <NumberCounter to={5000} duration={2.5} />
+              </h3>
+              <p className="mt-4 text-sm font-medium uppercase tracking-widest text-tow-muted">Active Users</p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+            >
+              <h3 className="font-serif text-6xl font-bold sm:text-7xl md:text-8xl text-[#FF6B35]">
+                <NumberCounter to={12000} duration={3} />
+              </h3>
+              <p className="mt-4 text-sm font-medium uppercase tracking-widest text-tow-muted">Successful Tows</p>
+            </motion.div>
           </div>
-        ))}
+        </div>
       </section>
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  SECTION 5 — VISUAL STORIES: Horizontal Video Scroll */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <HorizontalScrollVideos />
+
+      {/* ═══════════════════════════════════════════════════ */}
+      {/*  SECTION 5.5 — BENTO BOX: Moolre Integrations      */}
+      {/* ═══════════════════════════════════════════════════ */}
+      <BentoBoxIntegrations />
 
       {/* ═══════════════════════════════════════════════════ */}
       {/*  SECTION 6 — FOR DRIVERS: CTA banner               */}
@@ -461,13 +723,13 @@ export default function HomePage() {
             viewport={{ once: true }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            <Link
+            <MagneticButton
               to="/driver"
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-8 py-4 text-sm font-semibold text-white backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/40 sm:text-base"
+              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-8 py-4 text-sm font-semibold text-white backdrop-blur-md transition-all hover:bg-white/20 hover:border-white/40 sm:text-base cursor-none"
             >
               Join as a Driver
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </Link>
+            </MagneticButton>
           </motion.div>
         </div>
       </section>

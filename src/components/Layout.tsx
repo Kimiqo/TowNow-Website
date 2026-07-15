@@ -82,104 +82,108 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen text-tow-ink">
-      <header
-        className={`fixed inset-x-0 top-0 z-50 border-b border-tow-border/50 bg-tow-surface/70 backdrop-blur-lg shadow-sm transition-[transform,opacity] duration-300 ease-out ${
-          isHomepage && !headerVisible
-            ? '-translate-y-full opacity-0 pointer-events-none'
-            : 'translate-y-0 opacity-100'
-        }`}
-        aria-hidden={isHomepage && !headerVisible ? true : undefined}
-      >
-        <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6 lg:px-14 lg:py-4">
-          <Link to="/" className="text-lg font-extrabold tracking-tight text-tow-ink sm:text-xl">
-            TowNow
-          </Link>
-          <button
-            type="button"
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-900 shadow-sm md:hidden"
-            aria-expanded={mobileNavOpen}
-            aria-controls="mobile-site-nav"
-            onClick={() => setMobileNavOpen((o) => !o)}
-          >
-            <span className="sr-only">{mobileNavOpen ? 'Close menu' : 'Open menu'}</span>
-            {mobileNavOpen ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                <path d="M6 6l12 12M18 6L6 18" />
-              </svg>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-                <path d="M4 7h16M4 12h16M4 17h16" />
-              </svg>
-            )}
-          </button>
-          <nav
-            className="hidden flex-wrap items-center justify-end gap-2 text-sm font-medium sm:gap-3 md:flex lg:gap-5"
-            aria-label="Main"
-          >
-            <NavLink to="/" end className={navLinkClass}>
-              Home
-            </NavLink>
-            <NavLink to="/about" className={navLinkClass}>
-              About
-            </NavLink>
-            <NavLink to="/driver" className={navLinkClass}>
-              Driver
-            </NavLink>
-            <NavLink to="/contact" className={navLinkClass}>
-              Contact
-            </NavLink>
-          </nav>
-        </div>
-        {mobileNavOpen ? (
-          <>
+      <div className="relative z-10 bg-tow-bg transition-colors duration-700 min-h-screen">
+        <header
+          className={`fixed inset-x-0 top-0 z-50 border-b border-tow-border/50 bg-tow-surface/70 backdrop-blur-lg shadow-sm transition-[transform,opacity] duration-300 ease-out ${
+            isHomepage && !headerVisible
+              ? '-translate-y-full opacity-0 pointer-events-none'
+              : 'translate-y-0 opacity-100'
+          }`}
+          aria-hidden={isHomepage && !headerVisible ? true : undefined}
+        >
+          <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6 lg:px-14 lg:py-4">
+            <Link to="/" className="text-lg font-extrabold tracking-tight text-tow-ink sm:text-xl">
+              TowNow
+            </Link>
             <button
               type="button"
-              className="fixed inset-0 top-14 z-40 bg-zinc-950/40 backdrop-blur-[2px] md:hidden"
-              aria-label="Close menu"
-              onClick={() => setMobileNavOpen(false)}
-            />
-            <nav
-              id="mobile-site-nav"
-              className="absolute left-0 right-0 top-full z-50 flex flex-col gap-1 border-b border-zinc-200 bg-[#FAFAF9] px-4 py-3 shadow-lg sm:px-6 md:hidden"
-              aria-label="Mobile"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-900 shadow-sm md:hidden"
+              aria-expanded={mobileNavOpen}
+              aria-controls="mobile-site-nav"
+              onClick={() => setMobileNavOpen((o) => !o)}
             >
-              <NavLink
-                to="/"
-                end
-                className={(p) => [navLinkClass(p), 'block rounded-lg px-3 py-2.5'].join(' ')}
-                onClick={() => setMobileNavOpen(false)}
-              >
+              <span className="sr-only">{mobileNavOpen ? 'Close menu' : 'Open menu'}</span>
+              {mobileNavOpen ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                  <path d="M4 7h16M4 12h16M4 17h16" />
+                </svg>
+              )}
+            </button>
+            <nav
+              className="hidden flex-wrap items-center justify-end gap-2 text-sm font-medium sm:gap-3 md:flex lg:gap-5"
+              aria-label="Main"
+            >
+              <NavLink to="/" end className={navLinkClass}>
                 Home
               </NavLink>
-              <NavLink
-                to="/about"
-                className={(p) => [navLinkClass(p), 'block rounded-lg px-3 py-2.5'].join(' ')}
-                onClick={() => setMobileNavOpen(false)}
-              >
+              <NavLink to="/about" className={navLinkClass}>
                 About
               </NavLink>
-              <NavLink
-                to="/driver"
-                className={(p) => [navLinkClass(p), 'block rounded-lg px-3 py-2.5'].join(' ')}
-                onClick={() => setMobileNavOpen(false)}
-              >
+              <NavLink to="/driver" className={navLinkClass}>
                 Driver
               </NavLink>
-              <NavLink
-                to="/contact"
-                className={(p) => [navLinkClass(p), 'block rounded-lg px-3 py-2.5'].join(' ')}
-                onClick={() => setMobileNavOpen(false)}
-              >
+              <NavLink to="/contact" className={navLinkClass}>
                 Contact
               </NavLink>
             </nav>
-          </>
-        ) : null}
-      </header>
-      {/* On inner pages the bar is always shown—offset content. On homepage the hero is full-bleed; the bar overlays once you scroll past it. */}
-      {!isHomepage ? <div className="h-14 shrink-0 sm:h-[72px] lg:h-[76px]" aria-hidden /> : null}
-      <main>{children}</main>
-      <footer className="bg-zinc-950 py-10 px-6 text-zinc-400 sm:px-12 md:py-12">
+          </div>
+          {mobileNavOpen ? (
+            <>
+              <button
+                type="button"
+                className="fixed inset-0 top-14 z-40 bg-zinc-950/40 backdrop-blur-[2px] md:hidden"
+                aria-label="Close menu"
+                onClick={() => setMobileNavOpen(false)}
+              />
+              <nav
+                id="mobile-site-nav"
+                className="absolute left-0 right-0 top-full z-50 flex flex-col gap-1 border-b border-zinc-200 bg-[#FAFAF9] px-4 py-3 shadow-lg sm:px-6 md:hidden"
+                aria-label="Mobile"
+              >
+                <NavLink
+                  to="/"
+                  end
+                  className={(p) => [navLinkClass(p), 'block rounded-lg px-3 py-2.5'].join(' ')}
+                  onClick={() => setMobileNavOpen(false)}
+                >
+                  Home
+                </NavLink>
+                <NavLink
+                  to="/about"
+                  className={(p) => [navLinkClass(p), 'block rounded-lg px-3 py-2.5'].join(' ')}
+                  onClick={() => setMobileNavOpen(false)}
+                >
+                  About
+                </NavLink>
+                <NavLink
+                  to="/driver"
+                  className={(p) => [navLinkClass(p), 'block rounded-lg px-3 py-2.5'].join(' ')}
+                  onClick={() => setMobileNavOpen(false)}
+                >
+                  Driver
+                </NavLink>
+                <NavLink
+                  to="/contact"
+                  className={(p) => [navLinkClass(p), 'block rounded-lg px-3 py-2.5'].join(' ')}
+                  onClick={() => setMobileNavOpen(false)}
+                >
+                  Contact
+                </NavLink>
+              </nav>
+            </>
+          ) : null}
+        </header>
+        {/* On inner pages the bar is always shown—offset content. On homepage the hero is full-bleed; the bar overlays once you scroll past it. */}
+        {!isHomepage ? <div className="h-14 shrink-0 sm:h-[72px] lg:h-[76px]" aria-hidden /> : null}
+        <main>{children}</main>
+      </div>
+
+      {/* Fixed Footer: Revealed like a curtain when the z-10 main content scrolls up */}
+      <footer className="sticky bottom-0 -z-10 bg-zinc-950 py-10 px-6 text-zinc-400 sm:px-12 md:py-12">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
             <div className="lg:col-span-2">
