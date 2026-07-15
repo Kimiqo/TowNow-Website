@@ -403,10 +403,10 @@ export default function HomePage() {
 
                 <motion.div variants={lineUp} className="mt-10 flex flex-wrap justify-center gap-4">
                   <MagneticButton
-                    href="#the-product"
+                    to="/book"
                     className="inline-flex items-center gap-2 rounded-full bg-[#FF6B35] px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[#E85D31] sm:text-base cursor-none"
                   >
-                    See how it works
+                    Book a Tow
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </MagneticButton>
                 </motion.div>

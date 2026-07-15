@@ -5,6 +5,8 @@ import ContactPage from './pages/ContactPage'
 import DriverPage from './pages/DriverPage'
 import HomePage from './pages/HomePage'
 import PrivacyPage from './pages/PrivacyPage'
+import LoginPage from './pages/LoginPage'
+import BookPage from './pages/BookPage'
 import CustomCursor from './components/CustomCursor'
 
 function App() {
@@ -18,6 +20,8 @@ function App() {
           <Route path="/driver" element={<DriverPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/book" element={<BookPage />} />
         </Routes>
       </Layout>
     </>
